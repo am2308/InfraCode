@@ -1,0 +1,20 @@
+---
+
+########################
+#Deploying ElasticSearch
+########################
+
+- name: Create deployment files dir
+  file: path=/root/DeploymentFiles state=directory
+
+- name: Copy yaml file from host to remote machine
+  copy:
+    src: "elasticsearch.yaml"
+    dest: /root/DeploymentFiles
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Launch elasticsearch statefulsets
+  command: "kubectl apply -f /root/DeploymentFiles/elasticsearch.yaml"
+

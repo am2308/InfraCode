@@ -1,0 +1,5 @@
+---
+
+docker_version: "1.11.2"
+docker_package_file: "docker-{{ docker_version }}.tgz"
+docker_download_url: "https://get.docker.com/builds/Linux/x86_64/{{ docker_package_file }}"

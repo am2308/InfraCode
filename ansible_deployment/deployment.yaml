@@ -1,0 +1,48 @@
+---
+#######################
+#Deploying ELK Stack
+#
+#######################
+
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Clone a private repository.
+      git:
+        repo: https://github.com/am2308/git_am2308.git
+        version: master
+        dest: "{{ playbook_dir }}/../../Deployment_Files"
+        #accept_hostkey: yes
+        # ssh-agent doesn't allow key to pass through remote sudo commands.
+        #become: no
+    - name: Copy elastcisearch yaml from cloned path to role files directory
+      copy:
+        src: "{{ playbook_dir }}/../../Deployment_Files/elasticsearch.yaml"
+        dest: "{{ playbook_dir }}/roles/elasticsearch/files"
+    - name: Copy filebeat yaml files from cloned path to role files directory
+      copy:
+        src: "{{ playbook_dir }}/../../Deployment_Files/{{ item }}"
+        dest: "{{ playbook_dir }}/roles/filebeat/files"
+      with_items:
+        - filebeatConfig.yaml
+        - filebeat.yaml
+    - name: Copy logstash yaml files from cloned path to role files directory
+      copy:
+        src: "{{ playbook_dir }}/../../Deployment_Files/{{ item }}"
+        dest: "{{ playbook_dir }}/roles/logstash/files"
+      with_items:
+        - logstashConfig.yaml
+        - logstash.yaml
+    - name: Copy kibana yaml from cloned path to role files directory
+      copy:
+        src: "{{ playbook_dir }}/../../Deployment_Files/kibana.yaml"
+        dest: "{{ playbook_dir }}/roles/kibana/files"
+
+- hosts: controller
+  gather_facts: true
+  become: true
+  roles:
+    - elasticsearch
+    - filebeat
+    - logstash
+    - kibana

@@ -1,0 +1,28 @@
+---
+
+########################
+#Deploying Filebeat
+########################
+
+- name: Create deployment files dir
+  file: path=/root/DeploymentFiles state=directory
+
+- name: Copy filebeat config and deployment yaml file from host to remote machine
+  copy:
+    src: "{{ item }}"
+    dest: /root/DeploymentFiles
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - filebeatConfig.yaml
+    - filebeat.yaml
+
+
+- name: Creating filebeat configmaps and deployment
+  command: "kubectl apply -f /root/DeploymentFiles/{{ item }}"
+  with_items:
+    - filebeatConfig.yaml
+    - filebeat.yaml
+
+

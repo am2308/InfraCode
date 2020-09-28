@@ -1,0 +1,66 @@
+---
+#####################
+# Install Python
+#####################
+
+- hosts: all
+  gather_facts: false # As Python is not yet installed, we cannot gather host facts
+  become: true
+  tasks:
+    - name: Ansible delete file example
+      file:
+        path: /var/lib/apt/lists/lock
+        state: absent
+    - name: Ansible delete file example
+      file:
+        path: /var/cache/apt/archives/lock
+        state: absent
+    - name: Ansible delete file example
+      file:
+        path: /var/lib/dpkg/lock
+        state: absent
+    - name: Run dpkg package
+      shell: dpkg --configure -a
+    - name: Upgrade all apt packages
+      apt: upgrade=dist force_apt_get=yes
+    - name: install python 2
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+#######################
+# Setup K8s components
+#######################
+
+- hosts: etcd
+  vars:
+    ec2_private_dns_name: "ip-10-43-0-10.ec2.internal"
+  roles:
+    - common
+    - etcd
+
+- hosts: controller
+  vars:
+    ec2_private_dns_name: "ip-10-43-0-20.ec2.internal"
+  roles:
+    - common
+    - controller
+
+- hosts: worker0
+  vars:
+    ec2_private_dns_name: "ip-10-43-0-30.ec2.internal"
+  roles:
+    - common
+    - worker
+
+- hosts: worker1
+  vars:
+    ec2_private_dns_name: "ip-10-43-0-31.ec2.internal"
+  roles:
+    - common
+    - worker
+
+- hosts: worker2
+  vars:
+    ec2_private_dns_name: "ip-10-43-0-32.ec2.internal"
+  roles:
+    - common
+    - worker

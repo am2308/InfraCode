@@ -1,0 +1,17 @@
+[tag_ansibleNodeType_etcd]
+3.238.38.113
+
+[tag_ansibleNodeType_worker]
+3.237.72.211
+
+[tag_ansibleNodeType_controller]
+3.235.16.174
+
+[etcd:children]
+tag_ansibleNodeType_etcd
+
+[worker:children]
+tag_ansibleNodeType_worker
+
+[controller:children]
+tag_ansibleNodeType_controller

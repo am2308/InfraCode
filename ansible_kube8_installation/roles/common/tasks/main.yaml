@@ -1,0 +1,65 @@
+---
+
+####################
+# Set hostname
+####################
+
+# Set hostname to internal DNS FQN. Default name is not fully qualified.
+# As nodes register themselves using hostname, if not FQN other nodes will not be able to resolve it. 
+#########
+# Docker
+#########
+
+- name: Download docker binaries
+  get_url:
+    url: "{{ docker_download_url }}"
+    dest: "/usr/local/src"
+    # TODO Add hash check
+  become: true
+
+- name: Unpack docker binaries
+  unarchive:
+    copy: no
+    src: "/usr/local/src/{{ docker_package_file }}"
+    dest: "/usr/local/src/"
+    creates: "/local/src/docker/docker"
+  become: true
+
+- name: Copy docker binaries
+  copy:
+    remote_src: true
+    src: "/usr/local/src/docker/{{ item }}"
+    dest: /usr/bin
+    mode: 0755
+  with_items: # Remote-to-remote copy doesn't support file glob yet
+    - docker
+    - docker-containerd
+    - docker-containerd-ctr
+    - docker-containerd-shim
+    - docker-runc
+  become: true
+
+- name: Add docker systemd unit
+  template:
+    src: docker.service.j2
+    dest: /etc/systemd/system/docker.service
+    mode: 700
+  become: true
+  notify:
+    - Reload systemd
+    - Enable docker service
+    - Restart docker service
+
+- name: Add internal DNS name to hosts file
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: '127.0.0.1 localhost {{ ec2_private_dns_name }}'
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Set internal DNS name as hostname
+  shell: "hostname {{ ec2_private_dns_name }}"
+  become: true
